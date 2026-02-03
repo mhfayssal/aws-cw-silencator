@@ -19,8 +19,9 @@ provider "aws" {
   default_tags {
     tags = {
       Environnement    = "PRD"
-      "mtx:Monitoring" = "true"
-      Owner            = "Metanext"
+      "eyn:Monitoring" = "true"
+      Owner            = "EYN"
     }
   }
 }
+
