@@ -1,0 +1,97 @@
+name: AI Autopatch (Exclude Keywords)
+
+on:
+  workflow_dispatch:
+    inputs:
+      request:
+        description: "Describe the change to apply"
+        required: true
+        default: "Add exclude_keywords support to Lambda filtering logic"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  autopatch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Generate patch with OpenAI
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          REQUEST: ${{ github.event.inputs.request }}
+        run: |
+          python - << 'PY'
+          import os, requests
+          from pathlib import Path
+
+          file_path = Path("sources/lambda_function.py")
+          source_code = file_path.read_text(encoding="utf-8")
+
+          prompt = f"""
+          You are a senior AWS DevOps engineer.
+
+          Goal:
+          Add support for an optional field "exclude_keywords" (list of strings).
+
+          Rules:
+          - keep existing behavior using "keywords" and "status"
+          - exclude alarms whose AlarmName contains any exclude keyword
+          - case-insensitive matching
+          - avoid duplicates
+          - do not add external dependencies
+          - return ONLY a valid unified git diff
+          - target file: sources/lambda_function.py
+
+          FILE CONTENT:
+          {source_code}
+          """
+
+          r = requests.post(
+              "https://api.openai.com/v1/responses",
+              headers={
+                  "Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}",
+                  "Content-Type": "application/json",
+              },
+              json={
+                  "model": "gpt-4.1-mini",
+                  "input": prompt,
+              },
+              timeout=120,
+          )
+          r.raise_for_status()
+
+          diff = r.json()["output"][0]["content"][0]["text"]
+          Path("patch.diff").write_text(diff, encoding="utf-8")
+          print(diff)
+          PY
+
+      - name: Apply patch
+        run: |
+          git apply patch.diff
+
+      - name: Commit & push
+        run: |
+          git checkout -b ai/exclude-keywords
+          git add sources/lambda_function.py
+          git commit -m "feat: add exclude_keywords support"
+          git push origin ai/exclude-keywords
+
+      - name: Create Pull Request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --title "feat: add exclude_keywords support" \
+            --body "Adds exclude_keywords support to CloudWatch alarm filtering logic." \
+            --base main \
+            --head ai/exclude-keywords
