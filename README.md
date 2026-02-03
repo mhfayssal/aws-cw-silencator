@@ -5,26 +5,26 @@
 ![Lambda](https://img.shields.io/badge/AWS-Lambda-yellow)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-> **aws-cw-silencator** est une solution **serverless** permettant de **désactiver ou réactiver les actions des alarmes Amazon CloudWatch** en fonction de mots-clés.  
-Elle est idéale pour **silencier les alertes pendant des périodes de maintenance**, de déploiement ou de tests.
+> **aws-cw-silencator** is a **serverless solution** that allows you to **disable or re-enable Amazon CloudWatch alarm actions** based on keywords.  
+It is designed to **silence alerts during maintenance windows**, deployments, or testing phases.
 
 ---
 
-## 📌 Pourquoi ce projet ?
+## 📌 Why this project?
 
-Lors de :
-- déploiements applicatifs
-- maintenances planifiées
-- migrations infra
-- tests de charge
+During:
+- application deployments
+- planned maintenance
+- infrastructure migrations
+- load or stress testing
 
-👉 les alarmes CloudWatch peuvent générer **des alertes inutiles** (Slack, PagerDuty, email…).
+👉 CloudWatch alarms may trigger **unnecessary alerts** (Slack, PagerDuty, email, etc.).
 
-**aws-cw-silencator** permet de :
-- 🔕 **désactiver temporairement** les actions d’alarme
-- 🔔 **les réactiver automatiquement**
-- 🎯 cibler précisément les alarmes par **mots-clés**
-- 🚀 rester **100 % IaC** avec Terraform
+**aws-cw-silencator** helps you:
+- 🔕 **temporarily disable** alarm actions
+- 🔔 **re-enable them later**
+- 🎯 precisely target alarms using **keywords**
+- 🚀 stay **100% Infrastructure as Code** with Terraform
 
 ---
 
@@ -41,15 +41,15 @@ CloudWatch Alarms
 (Enable / Disable actions)
 ```
 
-### Composants
-- **AWS Lambda** : logique métier
+### Components
+- **AWS Lambda** – business logic
 - **CloudWatch Alarms**
-- **IAM Role** (permissions minimales)
-- **Terraform** pour le déploiement
+- **IAM Role** with least-privilege permissions
+- **Terraform** for deployment
 
 ---
 
-## 📂 Structure du projet
+## 📂 Project structure
 
 ```text
 .
@@ -65,15 +65,15 @@ CloudWatch Alarms
 
 ---
 
-## ⚙️ Prérequis
+## ⚙️ Prerequisites
 
 - Terraform **≥ 1.x**
-- AWS CLI configuré
-- Un compte AWS avec accès CloudWatch, IAM et Lambda
+- AWS CLI configured
+- An AWS account with access to CloudWatch, IAM, and Lambda
 
 ---
 
-## 🚀 Déploiement
+## 🚀 Deployment
 
 ```bash
 terraform init
@@ -81,15 +81,15 @@ terraform plan
 terraform apply
 ```
 
-À la fin du déploiement, Terraform fournit :
-- le **nom de la Lambda**
-- son **ARN**
+After deployment, Terraform outputs:
+- the **Lambda function name**
+- its **ARN**
 
 ---
 
-## ▶️ Utilisation
+## ▶️ Usage
 
-### Payload d’entrée
+### Input payload
 
 ```json
 {
@@ -98,16 +98,16 @@ terraform apply
 }
 ```
 
-### Champs
+### Fields
 
-| Champ     | Type   | Obligatoire | Description |
-|----------|--------|-------------|------------|
-| keywords | array  | Oui | Mots-clés recherchés dans le nom des alarmes |
-| status   | string | Oui | `stop` ou `start` |
+| Field    | Type   | Required | Description |
+|---------|--------|----------|-------------|
+| keywords | array  | Yes | Keywords matched against alarm names |
+| status   | string | Yes | `stop` or `start` |
 
 ---
 
-### 🔕 Désactiver les alarmes
+### 🔕 Disable alarms
 
 ```json
 {
@@ -116,11 +116,11 @@ terraform apply
 }
 ```
 
-➡️ Appelle `DisableAlarmActions` sur les alarmes correspondantes.
+➡️ Calls `DisableAlarmActions` on matching alarms.
 
 ---
 
-### 🔔 Réactiver les alarmes
+### 🔔 Re-enable alarms
 
 ```json
 {
@@ -129,11 +129,11 @@ terraform apply
 }
 ```
 
-➡️ Appelle `EnableAlarmActions`.
+➡️ Calls `EnableAlarmActions`.
 
 ---
 
-## 🧪 Exemple d’invocation AWS CLI
+## 🧪 AWS CLI invocation example
 
 ```bash
 aws lambda invoke   --function-name aws-cw-silencator   --payload '{
@@ -144,37 +144,37 @@ aws lambda invoke   --function-name aws-cw-silencator   --payload '{
 
 ---
 
-## 📜 Logs & observabilité
+## 📜 Logs & observability
 
-La Lambda log :
-- le nombre d’alarmes analysées
-- le nombre d’alarmes modifiées
-- les erreurs éventuelles
+The Lambda function logs:
+- number of alarms scanned
+- number of alarms updated
+- any errors encountered
 
-Logs disponibles dans **CloudWatch Logs**.
+Logs are available in **CloudWatch Logs**.
 
 ---
 
-## 🔐 Sécurité
+## 🔐 Security
 
-- Permissions IAM au strict minimum
-- Aucun secret stocké
-- Aucun environnement client hardcodé
+- Least-privilege IAM permissions
+- No secrets stored
+- No customer-specific configuration hardcoded
 
 ---
 
 ## 🛣️ Roadmap
 
-- Mode dry-run
-- Exclusions par mot-clé
-- Filtrage par tags CloudWatch
-- Support multi-régions
-- EventBridge Schedule
-- Multi-comptes (AssumeRole)
-- GitHub Actions
+- Dry-run mode
+- Keyword exclusions
+- CloudWatch tag-based filtering
+- Multi-region support
+- EventBridge scheduling
+- Multi-account support (AssumeRole)
+- GitHub Actions (linting & security)
 
 ---
 
-## 📄 Licence
+## 📄 License
 
 MIT License
